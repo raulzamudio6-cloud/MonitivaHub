@@ -1,0 +1,113 @@
+stages:
+ - build
+
+build_base_hub:
+  stage: build
+  when: manual
+  image: docker:27-cli
+  allow_failure: false
+  services:
+    - name: docker:27-dind
+      command: ["--mtu=1460"] 
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""      # disable TLS between CLI and DinD
+    DOCKER_BUILDKIT: "1"
+    PROJECT_PATH: hub_base
+  before_script:
+    - docker login $AZURE_REGISTRY -u $AZURE_REGISTRY_USER -p $AZURE_REGISTRY_PASSWORD
+    - docker version
+    - docker buildx version || true
+    - docker buildx create --use default || true
+  script:
+    - export APP_IMAGE=$AZURE_REGISTRY/$PROJECT_PATH:$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA
+    - echo $APP_IMAGE
+    - docker build -t $APP_IMAGE .
+    - docker push $APP_IMAGE
+  tags:
+    - gitlab-org-docker
+
+build_sms:
+  stage: build
+  when: manual
+  image: docker:27-cli
+  allow_failure: false
+  services:
+    - name: docker:27-dind
+      command: ["--mtu=1460"] 
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""      # disable TLS between CLI and DinD
+    DOCKER_BUILDKIT: "1"
+    DF_LOCATION: sms/Dockerfile
+    DF_CONTEXT: ./sms/
+    PROJECT_PATH: hub_sms
+  before_script:
+    - docker login $AZURE_REGISTRY -u $AZURE_REGISTRY_USER -p $AZURE_REGISTRY_PASSWORD
+    - docker version
+    - docker buildx version || true
+    - docker buildx create --use default || true
+  script:
+    - export APP_IMAGE=$AZURE_REGISTRY/$PROJECT_PATH:$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA
+    - echo $APP_IMAGE
+    - docker build -t $APP_IMAGE -f $DF_LOCATION $DF_CONTEXT
+    - docker push $APP_IMAGE
+  tags:
+    - gitlab-org-docker
+
+build_scheduler:
+  stage: build
+  when: manual
+  image: docker:27-cli
+  allow_failure: false
+  services:
+    - name: docker:27-dind
+      command: ["--mtu=1460"] 
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""      # disable TLS between CLI and DinD
+    DOCKER_BUILDKIT: "1"
+    DF_LOCATION: scheduler/Dockerfile
+    DF_CONTEXT: ./scheduler/
+    PROJECT_PATH: hub_scheduler
+  before_script:
+    - docker login $AZURE_REGISTRY -u $AZURE_REGISTRY_USER -p $AZURE_REGISTRY_PASSWORD
+    - docker version
+    - docker buildx version || true
+    - docker buildx create --use default || true
+  script:
+    - export APP_IMAGE=$AZURE_REGISTRY/$PROJECT_PATH:$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA
+    - echo $APP_IMAGE
+    - docker build -t $APP_IMAGE -f $DF_LOCATION $DF_CONTEXT
+    - docker push $APP_IMAGE
+  tags:
+    - gitlab-org-docker
+
+build_mailer:
+  stage: build
+  when: manual
+  image: docker:27-cli
+  allow_failure: false
+  services:
+    - name: docker:27-dind
+      command: ["--mtu=1460"] 
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""      # disable TLS between CLI and DinD
+    DOCKER_BUILDKIT: "1"
+    DF_LOCATION: mailer/Dockerfile
+    DF_CONTEXT: ./mailer/
+    PROJECT_PATH: hub_mailer
+  before_script:
+    - docker login $AZURE_REGISTRY -u $AZURE_REGISTRY_USER -p $AZURE_REGISTRY_PASSWORD
+    - docker version
+    - docker buildx version || true
+    - docker buildx create --use default || true
+  script:
+    - export APP_IMAGE=$AZURE_REGISTRY/$PROJECT_PATH:$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA
+    - echo $APP_IMAGE
+    - docker build -t $APP_IMAGE -f $DF_LOCATION $DF_CONTEXT
+    - docker push $APP_IMAGE
+  tags:
+    - gitlab-org-docker
+

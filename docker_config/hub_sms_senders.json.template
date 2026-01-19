@@ -1,0 +1,148 @@
+[
+   {
+      "name": "vertex",
+      "enabled": true,
+      "priority": 1,
+      "params": {
+         "URL": "https://api.vertexsms.com/sms",
+         "token": "NRd0Hhd8DyhqUqbVusF-token",
+         "SenderName": "Canopus"
+      }
+   },
+
+   {
+      "name": "clickatell",
+      "enabled": false,
+      "priority": 2,
+      "params": {
+         "URL": "http://api.clickatell.com/http/sendmsg",
+         "Username": "Username",
+         "APIID": "123456",
+         "Password": "Password",
+         "SenderName": "Canopus"
+      }
+   },
+
+   {
+      "name": "cardboardfish",
+      "enabled": false,
+      "priority": 3,
+      "params": {
+         "URL": "http://sms1.cardboardfish.com:9001/HTTPSMS",
+         "Username": "Username",
+         "Password": "Password",
+         "hdc": "4",
+         "SenderName": "Canopus"
+      }
+   },
+
+   {
+      "name": "nexmo",
+      "enabled": false,
+      "priority": 4,
+      "params": {
+         "URL": "https://rest.nexmo.com/sms/xml",
+         "Username": "Username",
+         "Password": "Password",
+         "SenderName": "Canopus"
+      }
+   },
+
+   {
+      "name": "mfms",
+      "enabled": false,
+      "priority": 5,
+      "params": {
+         "URL": "https://gate10.mfms.ru:9880/username/connector1/send",
+         "StatusURL": "https://gate10.mfms.ru:9880/username/connector1/status",
+         "Certificate": "mfms-username-connector1-gate10.cert",
+         "Username": "Username",
+         "Password": "Password",
+         "SenderName": "Canopus"
+      }
+   },
+
+   {
+      "name": "smscentr",
+      "enabled": false,
+      "priority": 6,
+      "params": {
+         "URL": "https://smsc.ru/sys/send.php",
+         "Username": "Username",
+         "Password": "Password",
+         "SenderName": "Canopus",
+         "Translit": "0"
+      }
+   },
+
+   {
+      "name": "clickatell2",
+      "enabled": false,
+      "priority": 7,
+      "params": {
+         "URL": "https://platform.clickatell.com/messages/http/send",
+         "APIKey": "123456",
+         "SenderName": "Canopus"
+      }
+   },
+
+   {
+      "name": "baltneta",
+      "enabled": false,
+      "priority": 8,
+      "params": {
+         "URL": "https://sms.baltneta.lt/external/get/send.php",
+         "TimestampURL": "https://sms.baltneta.lt/external/get/timestamp.php",
+         "Username": "123456789",
+         "APIKey": "1234567890abcdef1234567890abcdef1234567",
+         "SenderName": "Canopus"
+      }
+   },
+
+   {
+      "name": "websms",
+      "enabled": false,
+      "priority": 9,
+      "params": {
+         "URL": "http://websms.ru/xml_in5.asp",
+         "Username": "Username",
+         "Password": "Password",
+         "SenderName": "Canopus"
+      }
+   },
+
+   {
+      "name": "websms",
+      "enabled": false,
+      "priority": 9,
+      "params": {
+         "URL": "http://websms.ru/xml_in5.asp",
+         "Username": "Username",
+         "Password": "Password",
+         "SenderName": "Canopus"
+      }
+   },
+
+   {
+      "name": "smsapi",
+      "enabled": false,
+      "priority": 10,
+      "params": {
+         "URL": "https://api.smsapi.com/sms.do",
+         "Token": "oIgc84bzAanT5JeIiy7-token",
+         "SenderName": "Canopus"
+      }
+   },
+
+   {
+      "name": "sinch",
+      "enabled": false,
+      "priority": 11,
+      "params": {
+         "URL": "https://sms.api.sinch.com/xms/v1/{0}/batches",
+         "ServicePlanID": "000",
+         "Token": "000",
+         "SenderName": "+440000000000"
+      }
+   }
+]

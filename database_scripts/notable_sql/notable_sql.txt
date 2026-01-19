@@ -1,0 +1,6 @@
+declare @MostRecentMbTaskID BIGINT = (SELECT MAX(MbTaskID) FROM integrations.MbTasks WITH (NOLOCK))
+declare @MostRecentMbTaskIDInProcess datetime = (SELECT MAX(MbTaskID) FROM integrations.MbTasks_in_process WITH (NOLOCK))
+SELECT CASE 
+WHEN coalesce(@MostRecentMbTaskID,0) > coalesce(@MostRecentMbTaskIDInProcess,0) THEN 1
+ELSE 0
+END AS ThereAreTasksToProcess

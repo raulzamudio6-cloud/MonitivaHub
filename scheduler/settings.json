@@ -1,0 +1,11 @@
+{
+    "sql": {
+        "url": "Server=149.5.9.14;port=65533;Database=Reference_5_5_adrugov;Encrypt=true;TrustServerCertificate=true;Connection Timeout=30;MultipleActiveResultSets=True",
+        "login": "sa",
+        "pass": "<pass>",
+        "tech_timeout": 5
+    },
+    "tasks": {
+        "graceful_timeout": 5
+    }
+}

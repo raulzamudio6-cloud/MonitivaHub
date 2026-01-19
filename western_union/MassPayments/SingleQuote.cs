@@ -1,0 +1,29 @@
+﻿using Newtonsoft.Json.Linq;
+
+namespace eu.advapay.core.hub.western_union
+{
+    public sealed class SingleQuote
+    {
+        private const string MethodUrl = "/quotes";
+        private const string Method = "POST";
+        private readonly string _url;
+        private readonly string _certificatePath;
+        private readonly string _certificatePassword;
+
+        public SingleQuote(string url, string certificatePath, string certificatePassword)
+        {
+            _url = url;
+            _certificatePath = certificatePath;
+            _certificatePassword = certificatePassword;
+        }
+
+        public JObject CreateQuote(string request)
+        {
+            string url = $"{_url}{MethodUrl}";
+            WesternUnionGate westernUnionGate = new WesternUnionGate(url, _certificatePath, _certificatePassword);
+            JObject response = westernUnionGate.SendRequest(MethodUrl, Method, request);
+            ResponseChecker responseChecker = new ResponseChecker();
+            return responseChecker.CheckResponse(response);
+        }
+    }
+}

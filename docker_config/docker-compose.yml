@@ -1,0 +1,413 @@
+version: "3.8"
+services:
+    hub_rabbitmq:
+        image: rabbitmq:3.9-management 
+        profiles: ["core","webhooks"]
+        restart: unless-stopped
+        environment:
+            - RABBITMQ_LOGS=-
+        networks:
+            - hub_network
+        volumes:
+            - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+            - ./definitions.json:/etc/rabbitmq/definitions.json:ro
+
+
+    hub_redis:
+        image: redis:latest
+        profiles: ["core"]
+        restart: unless-stopped
+        networks:
+            - hub_network
+        volumes:
+            - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+            - ./definitions.json:/etc/rabbitmq/definitions.json:ro
+
+
+    hub_publisher:
+        image: mb_hub:latest
+        profiles: ["core"]
+        restart: unless-stopped
+        environment:
+            - SERVICE_NAME=TaskPublisher
+        depends_on:
+            - hub_rabbitmq
+        build:
+            context: .
+            dockerfile: Dockerfile
+        networks:
+            - hub_network
+        volumes:
+            - ./hub_rabbitmq.secret.env:/application/hub_rabbitmq.secret.env:ro
+            - ./hub_database.secret.env:/application/hub_database.secret.env:ro
+            - ./hub_logs.env:/application/hub_logs.env:ro
+            - ./logs:/application/logs
+      
+      
+    hub_result_saver:
+        image: mb_hub:latest
+        profiles: ["core","webhooks"]
+        restart: unless-stopped
+        environment:
+            - SERVICE_NAME=TaskResultSaver
+        depends_on:
+            - hub_rabbitmq
+        networks:
+            - hub_network
+        volumes:
+            - ./hub_rabbitmq.secret.env:/application/hub_rabbitmq.secret.env:ro
+            - ./hub_database.secret.env:/application/hub_database.secret.env:ro
+            - ./hub_logs.env:/application/hub_logs.env:ro
+            - ./logs:/application/logs
+
+
+    hub_rr_log:
+        image: mb_hub:latest
+        profiles: ["core"]
+        restart: unless-stopped
+        environment:
+            - SERVICE_NAME=ReqRespLogWorker
+            
+        depends_on:
+            - hub_rabbitmq
+        networks:
+            - hub_network
+        volumes:
+            - ./hub_rabbitmq.secret.env:/application/hub_rabbitmq.secret.env:ro
+            - ./hub_database.secret.env:/application/hub_database.secret.env:ro
+            - ./hub_logs.env:/application/hub_logs.env:ro
+            - ./logs:/application/logs
+
+
+    hub_http_utils:
+        image: mb_hub:latest
+        profiles: ["core"]
+        restart: unless-stopped
+        environment:
+            - SERVICE_NAME=HttpUtilsWorker
+        deploy:
+            replicas: 3            
+        depends_on:
+            - hub_rabbitmq
+        networks:
+            - hub_network
+        volumes:
+            - ./hub_rabbitmq.secret.env:/application/hub_rabbitmq.secret.env:ro
+            - ./hub_logs.env:/application/hub_logs.env:ro
+            - ./logs:/application/logs
+
+    hub_security:
+        image: mb_hub:latest
+        profiles: ["core"]
+        restart: unless-stopped
+        environment:
+            - SERVICE_NAME=SecurityWorker
+            
+        depends_on:
+            - hub_rabbitmq
+        networks:
+            - hub_network
+        volumes:
+            - ./hub_rabbitmq.secret.env:/application/hub_rabbitmq.secret.env:ro
+            - ./hub_logs.env:/application/hub_logs.env:ro
+            - ./hub_security.secret.env:/application/hub_security.secret.env:ro
+            - ./logs:/application/logs
+
+    hub_exec_proc:
+        image: mb_hub:latest
+        profiles: ["core"]
+        restart: unless-stopped
+        environment:
+            - SERVICE_NAME=ExecProcWorker
+            
+        depends_on:
+            - hub_rabbitmq
+        networks:
+            - hub_network
+        volumes:
+            - ./hub_rabbitmq.secret.env:/application/hub_rabbitmq.secret.env:ro
+            - ./hub_database.secret.env:/application/hub_database.secret.env:ro
+            - ./hub_logs.env:/application/hub_logs.env:ro
+            - ./logs:/application/logs
+
+
+    hub_scheduler:
+        image: mb_scheduler:latest
+        profiles: ["core"]
+        restart: unless-stopped
+        environment:
+            - SERVICE_NAME=Scheduler
+            
+        depends_on:
+            - hub_rabbitmq
+
+        build:
+            context: ${CMD_PATH}cmd/scheduler
+            dockerfile: Dockerfile
+            
+        networks:
+            - hub_network
+        volumes:
+            - ./hub_database.secret.env:/application/hub_database.secret.env:ro
+            - ./hub_scheduler.env:/application/hub_scheduler.env:ro
+            - ./hub_logs.env:/application/hub_logs.env:ro
+            - ./logs:/application/logs
+            
+            
+    hub_sms:
+        image: mb_sms:latest
+        profiles: ["sms"]
+        restart: unless-stopped
+        environment:
+            - SERVICE_NAME=Sms
+            
+        depends_on:
+            - hub_rabbitmq
+            - hub_publisher
+
+        build:
+            context: ${CMD_PATH}cmd/sms
+            dockerfile: Dockerfile
+
+            
+        networks:
+            - hub_network
+        volumes:
+            - ./hub_rabbitmq.secret.env:/application/hub_rabbitmq.secret.env:ro
+            - ./hub_sms.secret.env:/application/hub_sms.secret.env:ro
+            - ./hub_sms_senders.json:/application/hub_sms_senders.json:ro
+            - ./hub_logs.env:/application/hub_logs.env:ro
+            - ./logs:/application/logs
+            #- ./env.sh:/application/entrypoint.sh
+
+    hub_mailer:
+        image: mb_mailer:latest
+        profiles: ["email"]
+        restart: unless-stopped
+        environment:
+            - SERVICE_NAME=Mailer
+            
+        depends_on:
+            - hub_rabbitmq
+            - hub_publisher
+
+        build:
+            context: ${CMD_PATH}cmd/mailer
+            dockerfile: Dockerfile
+            
+        networks:
+            - hub_network
+        volumes:
+            - ./hub_rabbitmq.secret.env:/application/hub_rabbitmq.secret.env:ro
+            - ./hub_mailer.secret.env:/application/hub_mailer.secret.env:ro
+            - ./hub_logs.env:/application/hub_logs.env:ro
+            - ./logs:/application/logs
+
+            
+    hub_rates_api:
+        image: mb_rates_api:latest
+        profiles: ["rates"]
+        restart: unless-stopped
+        environment:
+            - SERVICE_NAME=RatesAPI
+            
+        ports:
+            - ${RATES_API_PORT}:8090
+
+        depends_on:
+            - hub_rabbitmq
+            - hub_publisher
+            
+        build:
+            context: ${CMD_PATH}cmd/rates_api
+            dockerfile: Dockerfile
+            
+        networks:
+            - hub_network
+        volumes:
+            - ./hub_rabbitmq.secret.env:/application/hub_rabbitmq.secret.env:ro
+            - ./hub_rates_api.secret.env:/application/hub_rates_api.secret.env:ro
+            - ./hub_logs.env:/application/hub_logs.env:ro
+            - ./logs:/application/logs
+
+
+    hub_markup:
+        image: mb_hub:latest
+        profiles: ["rates"]
+        restart: unless-stopped
+        environment:
+            - SERVICE_NAME=RatesMarkupWorker
+        depends_on:
+            - hub_rabbitmq
+        networks:
+            - hub_network
+        volumes:
+            - ./hub_rabbitmq.secret.env:/application/hub_rabbitmq.secret.env:ro
+            - ./hub_database.secret.env:/application/hub_database.secret.env:ro
+            - ./hub_logs.env:/application/hub_logs.env:ro
+            - ./logs:/application/logs
+
+    hub_western_union:
+        image: mb_hub:latest
+        profiles: ["western-union"]
+        restart: unless-stopped
+        environment:
+            - SERVICE_NAME=WesternUnionWorker
+        depends_on:
+            - hub_rabbitmq
+        networks:
+            - hub_network
+        volumes:
+            - ./hub_rabbitmq.secret.env:/application/hub_rabbitmq.secret.env:ro
+            - ./hub_logs.env:/application/hub_logs.env:ro
+            - ./hub_western_union.env:/application/hub_western_union.env:ro
+            - ./hub_western_union.secret.env:/application/hub_western_union.secret.env:ro
+            - ./wu_fin.p12:/application/wu.p12
+            - ./ACHCountryCurrency.csv:/application/ACHCountryCurrency.csv
+            - ./WU_Errors.json:/application/WU_Errors.json
+            - ./logs:/application/logs
+
+    hub_western_union_rates:
+        image: mb_hub:latest
+        profiles: ["western-union"]
+        restart: unless-stopped
+        environment:
+            - SERVICE_NAME=WesternUnionWorker
+            - WU_CHANNEL=western-union-rates
+            - MULTI_TASK_FACTOR=10
+        depends_on:
+            - hub_rabbitmq
+        networks:
+            - hub_network
+        volumes:
+            - ./hub_rabbitmq.secret.env:/application/hub_rabbitmq.secret.env:ro
+            - ./hub_logs.env:/application/hub_logs.env:ro
+            - ./hub_western_union.env:/application/hub_western_union.env:ro
+            - ./hub_western_union.secret.env:/application/hub_western_union.secret.env:ro
+            - ./wu_fin.p12:/application/wu.p12
+            - ./ACHCountryCurrency.csv:/application/ACHCountryCurrency.csv
+            - ./WU_Errors.json:/application/WU_Errors.json
+            - ./logs:/application/logs
+
+    hub_dias_instant:
+        image: mb_hub:latest
+        profiles: ["dias-instant"]
+        restart: unless-stopped
+        environment:
+            - SERVICE_NAME=DiasInstantWorker
+
+        depends_on:
+            - hub_rabbitmq
+        networks:
+            - hub_network
+        volumes:
+            - ./hub_rabbitmq.secret.env:/application/hub_rabbitmq.secret.env:ro
+            - ./hub_logs.env:/application/hub_logs.env:ro
+            - ./hub_dias_instant.env:/application/hub_dias_instant.env:ro
+            - ./hub_dias_instant.secret.env:/application/hub_dias_instant.secret.env:ro
+
+    hub_currency_cloud:
+        image: mb_hub:latest
+        profiles: ["currency-cloud"]
+        restart: unless-stopped
+        environment:
+            - SERVICE_NAME=CurrencyCloudWorker
+
+        depends_on:
+            - hub_rabbitmq
+        networks:
+            - hub_network
+        volumes:
+            - ./hub_rabbitmq.secret.env:/application/hub_rabbitmq.secret.env:ro
+            - ./hub_redis.secret.env:/application/hub_redis.secret.env:ro
+            - ./hub_logs.env:/application/hub_logs.env:ro
+            - ./hub_currency_cloud.env:/application/hub_currency_cloud.env:ro
+            - ./hub_currency_cloud.secret.env:/application/hub_currency_cloud.secret.env:ro
+            - ./logs:/application/logs
+
+    hub_currency_cloud_cache_rates:
+        image: mb_hub:latest
+        profiles: ["currency-cloud"]
+        restart: unless-stopped
+        environment:
+            - SERVICE_NAME=CurrencyCloudCacheRatesWorker
+
+        depends_on:
+            - hub_rabbitmq
+        networks:
+            - hub_network
+        volumes:
+            - ./hub_rabbitmq.secret.env:/application/hub_rabbitmq.secret.env:ro
+            - ./hub_redis.secret.env:/application/hub_redis.secret.env:ro
+            - ./hub_logs.env:/application/hub_logs.env:ro
+            - ./hub_currency_cloud.env:/application/hub_currency_cloud.env:ro
+            - ./hub_currency_cloud.secret.env:/application/hub_currency_cloud.secret.env:ro
+            - ./logs:/application/logs
+
+
+    hub_webhooks:
+        image: mb_webhooks:latest
+        profiles: ["webhooks","western-union","currency-cloud"]
+        restart: unless-stopped
+        environment:
+            - SERVICE_NAME=WebHooks
+            
+        ports:
+                - ${WEBHOOKS_PORT}:8004
+
+            
+        build:
+            context: ${CMD_PATH}cmd/webhooks
+            dockerfile: Dockerfile
+            
+        networks:
+            - hub_network
+        volumes:
+            - ./hub_rabbitmq.secret.env:/application/hub_rabbitmq.secret.env:ro
+            - ./hub_webhooks.env:/application/hub_webhooks.env:ro
+            - ./hub_webhooks.secret.env:/application/hub_webhooks.secret.env:ro
+            - ./hub_logs.env:/application/hub_logs.env:ro
+            - ./logs:/application/logs
+
+    hub_webhooks2:
+        image: mb_webhooks:latest
+        restart: always
+        environment:
+            - SERVICE_NAME=WebHooks2
+            
+        ports:
+                - ${WEBHOOKS_PORT}:8004
+
+            
+        build:
+            context: ${CMD_PATH}cmd/webhooks
+            dockerfile: Dockerfile
+            
+        networks:
+            - hub_network
+        volumes:
+            - ./hub_rabbitmq.secret.env:/application/hub_rabbitmq.secret.env:ro
+            - ./hub_webhooks2.secret.env:/application/hub_webhooks2.secret.env:ro
+            - ./hub_logs.env:/application/hub_logs.env:ro
+            - ./logs:/application/logs
+
+    hub_openapi:
+        image: mb_hub:latest
+        restart: always
+        environment:
+            - SERVICE_NAME=OpenAPIWorker
+            - MULTI_TASK_FACTOR=3
+        depends_on:
+            - hub_rabbitmq
+        networks:
+            - hub_network
+        volumes:
+            - ./hub_rabbitmq.secret.env:/application/hub_rabbitmq.secret.env:ro
+            - ./hub_logs.env:/application/hub_logs.env:ro
+            - ./logs:/application/logs
+
+
+networks:
+    hub_network:
+        driver: bridge
+

@@ -1,0 +1,117 @@
+{
+  "Host": {
+    "LocalHttpPort": 7073
+  },
+  "profiles": {
+    "Hub": {
+      "commandName": "Project",
+      "workingDirectory": "D:\\src\\Projects\\core_api\\Hub\\bin\\Debug\\net5.0\\",
+      "environmentVariables": {
+        "NLOG_PATH": "./logs",
+        "OTP_CODE_VALIDITY_INTERVAL_SECONDS": "60",
+        "DATA_MAINTANANCE_DELETE_HISTORY_OLDER_THAN_DAYS": "10",
+        "SQLDB_CONNECTION": "Server=tcp:149.5.9.14,65533;Database=Reference_5_5_adrugov;Encrypt=false;Connection Timeout=30;MultipleActiveResultSets=True;",
+        "PLUGIN.western_union": "http://localhost:9925/api/western-union-service",
+        "SECURITY_FUNCTION_MAC_LENGTH": "5",
+        "PLUGIN.rietumu_service": "http://localhost:9922/api/rietumu-service",
+        "HTTP_LISTENER_PORT": "9919",
+        "ENV_VARIABLES_OVERRIDES_FILE": "${HOME}/mb_env.secrets",
+        "SQLDB_CONNECTION_LOGIN": "sa",
+        "RATES_INTEGRATION_SERVICE": "western_union",
+        "PLUGIN.security_digipass": "http://localhost:9921/api/digipass-service",
+        "EMAIL_SERVICE_PROVIDER_TYPE": "SENDGRID"
+      },
+      "remoteDebugEnabled": false
+    },
+    "HttpUtils": {
+      "commandName": "Project",
+      "commandLineArgs": "HttpUtilsWorker",
+      "environmentVariables": {
+        "NLOG_PATH": "./logs",
+        "MULTI_TASK_FACTOR": "3",
+        "RABBIT_PASSWORD": "guest",
+        "RABBIT_HOST": "10.1.163.132",
+        "RABBIT_USER": "guest"
+      }
+    },
+    "TaskResultSaver": {
+      "commandName": "Project",
+      "commandLineArgs": "TaskResultSaver",
+      "environmentVariables": {
+        "NLOG_PATH": "./logs",
+        "RABBIT_PASSWORD": "guest",
+        "RABBIT_HOST": "localhost",
+        "SQLDB_CONNECTION": "Server=tcp:149.5.9.14,65533;Database=Reference_5_5_adrugov;Encrypt=false;TrustServerCertificate=true;Connection Timeout=30;MultipleActiveResultSets=True",
+        "RABBIT_USER": "guest",
+        "ENV_VARIABLES_OVERRIDES_FILE": "${HOME}/mb_env.secrets",
+        "SQLDB_CONNECTION_LOGIN": "sa"
+      }
+    },
+    "WesternUnion": {
+      "commandName": "Project",
+      "commandLineArgs": "WesternUnionWorker",
+      "environmentVariables": {
+        "CURRENCY_HANBOOK": "western_union/CurrencyData.csv",
+        "CUSTOMER_ID": "AdvapaySoftware",
+        "RABBIT_PASSWORD": "guest",
+        "RABBIT_HOST": "localhost",
+        "PASSWORD": "FinductiveMasspay@2021",
+        "CERT": "western_union/wu_fin.p12",
+        "RABBIT_USER": "guest",
+        "WU_URL": "https://uat2.chdev.biz:11946/MassPayments"
+      }
+    },
+    "ExecProcWorker": {
+      "commandName": "Project",
+      "commandLineArgs": "ExecProcWorker"
+    },
+    "RatesMarkupWorker": {
+      "commandName": "Project",
+      "commandLineArgs": "RatesMarkupWorker",
+      "environmentVariables": {
+        "NLOG_PATH": "./logs",
+        "RABBIT_PASSWORD": "guest",
+        "RABBIT_HOST": "localhost",
+        "SQLDB_CONNECTION": "Server=tcp:149.5.9.14,65533;Database=Reference_5_5_adrugov;Encrypt=false;TrustServerCertificate=true;Connection Timeout=30;MultipleActiveResultSets=True",
+        "RABBIT_USER": "guest",
+        "ENV_VARIABLES_OVERRIDES_FILE": "${HOME}/mb_env.secrets",
+        "SQLDB_CONNECTION_LOGIN": "sa"
+      }
+    },
+    "ReqRespLogWorker": {
+      "commandName": "Project",
+      "commandLineArgs": "ReqRespLogWorker",
+      "environmentVariables": {
+        "NLOG_PATH": "./logs",
+        "RABBIT_PASSWORD": "guest",
+        "RABBIT_HOST": "localhost",
+        "SQLDB_CONNECTION": "Server=tcp:149.5.9.14,65533;Database=Reference_5_5_adrugov;Encrypt=false;TrustServerCertificate=true;Connection Timeout=30;MultipleActiveResultSets=True",
+        "RABBIT_USER": "guest",
+        "ENV_VARIABLES_OVERRIDES_FILE": "${HOME}/mb_env.secrets",
+        "SQLDB_CONNECTION_LOGIN": "sa"
+      }
+    },
+    "CurrencyCloudWorker": {
+      "commandName": "Project",
+      "commandLineArgs": "CurrencyCloudWorker",
+      "environmentVariables": {
+        "API_KEY": "0decfcf8c1fd1f6afde18e157303127120c4f55daefb7f4741b2383f3008370f",
+        "CURRENCY_CLOUD_URL": "https://devapi.currencycloud.com",
+        "RABBIT_PASSWORD": "guest",
+        "RABBIT_HOST": "localhost",
+        "LOGIN_ID": "viacheslav.tkachenko@advapay.eu",
+        "RABBIT_USER": "guest"
+      }
+    },
+    "DiasInstantWorker": {
+      "commandName": "Project",
+      "commandLineArgs": "DiasInstantWorker",
+      "environmentVariables": {
+        "DIAS_INSTANT_URL": "https://20.13.121.92:8090/dias",
+        "RABBIT_PASSWORD": "guest",
+        "RABBIT_HOST": "10.1.163.132",
+        "RABBIT_USER": "guest"
+      }
+    }
+  }
+}

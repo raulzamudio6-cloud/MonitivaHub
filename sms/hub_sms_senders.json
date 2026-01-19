@@ -1,0 +1,13 @@
+[
+   {
+      "name": "twilio",
+      "enabled": true,
+      "priority": 6,
+      "params": {
+         "token": "token",
+         "sid": "sid",
+         "messagingServiceSid": "messagingServiceSid",
+         "contentSid": "contentSid"
+      }
+   }
+]
